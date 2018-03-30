@@ -1,0 +1,180 @@
+#+title: VChunkJoin Edit String Similarity Join Source Code
+#+options: toc:t 
+
+# #+options: tex:imagemagick
+#+property: cache yes
+#+property: exports results
+
+#+LATEX_COMPILER: xelatex
+
+#+LATEX_HEADER: \usepackage{tikz}
+#+latex_header: \usepackage{amsthm}
+#+latex_header: \newtheorem{theorem}{Theorem}
+#+latex_header: \newtheorem{definition}{Definition}
+
+#+latex_header: \usepackage{fontspec}
+#+latex_header: \setromanfont{Purisa}
+#+latex_header: \setsansfont{Verdana}
+#+latex_header: \setmonofont{Ubuntu Mono}
+
+#+LaTeX_HEADER: \hypersetup{colorlinks=true, linkcolor=blue}
+
+#+latex_header: \usepackage{makeidx}
+#+latex_header: \makeindex
+
+#+latex_header: \usepackage{listings}
+
+# see http://www.w3schools.com/css/css_font.asp for more info
+#+HTML_HEAD: <style>.theorem {font-size: 1.5em; color: green; font-family: arial; text-decoration:underline;}
+#+HTML_HEAD: .theorem:before {content: "Theorem: "; font-weight: bold}</style>
+#+HTML_HEAD: <style>.definition {}
+#+HTML_HEAD: .definition:before {content: "Definition: "; font-style: italic; font-weight: bold}</style>
+
+* Basic information
+  * Author: Jianbin Qin
+  * Version: 0.1 (Only experimental)
+  * Contact: jqin@inf.ed.ac.uk
+  * More information: http://qinjianibn.com/
+
+* Introduction:
+  * Title: VChunkJoin: An Efficient Algorithm for Edit Similarity Joins
+  * Authors: Wei Wang, Jianbin Qin, Chuan Xiao, Xuemin Lin, Heng Tao Shen
+  * Published in TKDE, 2012
+
+** Abstract:  
+   Similarity joins play an important role in many application areas, such as data integration and cleaning, record linkage, and pattern recognition. In this paper, we study efficient algorithms for similarity joins with an edit distance constraint. Currently, the most prevalent approach is based on extracting overlapping grams from strings and considering only strings that share a certain number of grams as candidates. Unlike these existing approaches, we propose a novel approach to edit similarity join based on extracting nonoverlapping substrings, or chunks, from strings. We propose a class of chunking schemes based on the notion of tail-restricted chunk boundary dictionary. A new algorithm, VChunkJoin, is designed by integrating existing filtering methods and several new filters unique to our chunk-based method. We also design a greedy algorithm to automatically select a good chunking scheme for a given data set. We demonstrate experimentally that the new algorithm is faster than alternative methods yet occupies less space.
+
+** Comments:
+   This work explored the problem of variable length chunking in edit string similarity. It runs exceptionally efficient when there is a high quality CBD. Finding a high quality CBD is a really hard problem. We presented initial idea, but this part requires further exploration. 
+
+* Overview of Programs
+** Please Cite this paper:
+   #+begin_src bibtex
+   @article{DBLP:journals/tkde/WangQXLS13,
+   author    = {Wei Wang and
+   Jianbin Qin and
+   Chuan Xiao and
+   Xuemin Lin and
+   Heng Tao Shen},
+   title     = {VChunkJoin: An Efficient Algorithm for Edit Similarity Joins},
+   journal   = {{IEEE} Trans. Knowl. Data Eng.},
+   volume    = {25},
+   number    = {8},
+   pages     = {1916--1929},
+   year      = {2013},
+   url       = {https://doi.org/10.1109/TKDE.2012.79},
+   doi       = {10.1109/TKDE.2012.79},
+   timestamp = {Sat, 20 May 2017 00:24:23 +0200},
+   biburl    = {https://dblp.org/rec/bib/journals/tkde/WangQXLS13},
+   bibsource = {dblp computer science bibliography, https://dblp.org}
+   }
+   #+end_src
+
+** Related Papers
+   a)  Jianbin Qin, Wei Wang, Yifei Lu, Chuan Xiao, Xuemin Lin. Efficient Exact Edit Similarity Query Processing with Asymmetric Signature Schemes. SIGMOD 2011.
+   b)  Chuan Xiao, Wei Wang, Xuemin Lin, Jeffrey Xu Yu: Efficient Similarity Joins For Near Duplicate Detection. WWW 2008: 131-140.
+   c)  Chuan Xiao, Wei Wang, Xuemin Lin: Ed-Join: An Efficient Algorithm for Similarity Join with Edit Distance Constraints. VLDB 2008.
+
+** Executables
+   Program Name	    	Description
+   * charstat         Preprocess that used to suggest a prefix character set and a suffix character set.
+   * cbdselect        Preprocess that takes input text and prefix and suffix character set to generate a optimized (CBD) dictionary. 
+   * chunk_ed_join    The join process. It takes the CBD and text input. Output the join result. 
+
+* Package Manual
+** Installation 
+   * code, say
+   #+begin_src bash
+   $ git clone https://github.com/qinbill/VChunkJoin.git
+   $ cd VChunkJoin/src/
+   $ make
+   #+end_src
+  
+** Preprocessing
+   The preprocessing dose three things:
+   1. Find a character set suggestion. 
+   2. Generate a CBD.
+
+
+*** Find a character set suggestion. 
+    Usage:
+    #+begin_src bash   
+    $ cat ../data/dblp.sample.10k.gz | gzip -d | ./charstat 2
+    -s "evwzACPST" -u "abkpyDLMR"
+    #+end_src
+    
+    This process will generate two parameters: 
+    -s "evwzACPST" -u "abkpyDLMR"
+    Use those two as parameter for the next process. 
+    
+*** Generate a CBD:
+    Usage:
+    #+begin_src bash   
+    
+    $ ./cbdselect -h
+    Usage: Program <-s 'character set one'> 
+           <-u 'character set two'> 
+           <-m 'last prefix length min bound'> 
+           <-d dump final split of string records 
+           <-t edit distance> 
+           <-i cbd in file name> 
+           <-o cbd out put file name > 
+           <-h help > 
+           <-v version > 
+
+    $ cat ../data/dblp.sample.10k.gz | gzip -d | ./cbdselect -s 'aefg' -u 'vsxz' -t 3 -o cbd
+    #+end_src
+
+** Join Query Processing 
+   The join processing part takes input text from standard input. 
+   Usage:
+   #+begin_src bash
+$ ./chunk_ed_join -h
+usage: <-b bound dict file>
+       <-g virtual bound random seed>
+       <-t edit distance /tau>
+       [-d dump all the chunks and strings]
+       [-o not join underflow strings]
+       [-p dump all the prefix sorted by frequence]
+       [-c mute the chunk number filtering
+       [-r calculate the final edit-distance result
+       [-u print underflow candidates
+       [-s print ppjoin running time
+       [-h> for help information]
+This program output one line in stdout and all the candidates and information in stderr
+  --Stdout output format  explanation:
+       RNUM    :  All Input Records Number
+       CBD     :  The Chunk Boundary chars
+       TAU     :  Inputededit distence
+       TCADT   :  Total candidates
+       RCADT   :  TCADT-UDCDT, it means the candidates exclude underflows
+       UDCDT   :  Number of candidates create by underflows
+       UDNUM   :  Number of records is underflow
+       DCNUM   :  All Distinct Chunk Number
+       DWCNUM  :  All Distinct Widow Chunk Number
+       DICNUM  :  All Distinct Indexed Chunk Number
+       AVGPCL  :  Average Prefix Chunk length
+   --Stderr output format explanation
+       Candidate line is begin by CAND or BLCAND format is below
+       CAND[Candidate id] <Record id of a>[L:record length of a ][T:Chunk number of a]- \
+                 -<Record id of b>[L:record lenght of b][T:chunk number of b] <string a>---<string b> 
+   --Prefix chunks information format
+       PREFIX_CHUNKS: PF[the frequence in prefix] TF[the frequence in the overall]  "prefix string"
+Version: 0.0.1.0_PROD
+   #+end_src
+
+   A example:
+   #+begin_src bash   
+$ cat ../data/dblp.sample.10k.gz | gzip -d | ./chunk_ed_join -b cbd -t 3
+2 5313-2308
+RNUM= 10000  TAU= 3 CAND0= 501   CAND1= 2  CAND2= 1  UDCDT= 0  UDNUM= 5  RST_NUM= 1  TCN= 295739  TPL= 46221  APL= 4.624  TIDX= 15146  VCN_SEED= 121231  CBD= "cbd"  TOTAL= 0.124  PRE_PRC= 0.123  JOINT= 0.001  Usage: System usage stats 0.000805 elapsed 0.000668 user 0.000140 system sec
+   #+end_src
+
+
+
+Last Modified: <2018-03-29 Mon> by Jianbin Qin
+
+
+
+
+
