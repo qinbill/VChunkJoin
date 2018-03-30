@@ -31,7 +31,7 @@
 #+HTML_HEAD: .definition:before {content: "Definition: "; font-style: italic; font-weight: bold}</style>
 
 * Basic information
-  * Code author: Jianbin Qin
+  * Source code author: Jianbin Qin
   * Version: 0.1 (Only experimental)
   * Contact: jqin@inf.ed.ac.uk
   * More information: http://qinjianibn.com/
@@ -46,8 +46,6 @@
 
 ** Comments:
    This work explored the problem of variable length chunking in edit string similarity. It runs exceptionally efficient when there is a high quality CBD. Finding a high quality CBD is a really hard problem. We presented initial idea, but this part requires further exploration. 
-
-* Overview of Programs
 ** Please Cite this paper:
    #+begin_src bibtex
    @article{DBLP:journals/tkde/WangQXLS13,
@@ -70,17 +68,16 @@
    }
    #+end_src
 
-** Related Papers
-   a)  Jianbin Qin, Wei Wang, Yifei Lu, Chuan Xiao, Xuemin Lin. Efficient Exact Edit Similarity Query Processing with Asymmetric Signature Schemes. SIGMOD 2011.
-   b)  Chuan Xiao, Wei Wang, Xuemin Lin, Jeffrey Xu Yu: Efficient Similarity Joins For Near Duplicate Detection. WWW 2008: 131-140.
-   c)  Chuan Xiao, Wei Wang, Xuemin Lin: Ed-Join: An Efficient Algorithm for Similarity Join with Edit Distance Constraints. VLDB 2008.
 
+   
+* Overview of Programs
 ** Executables
    Program Name	    	Description
    * charstat         Preprocess that used to suggest a prefix character set and a suffix character set.
    * cbdselect        Preprocess that takes input text and prefix and suffix character set to generate a optimized (CBD) dictionary. 
    * chunk_ed_join    The join process. It takes the CBD and text input. Output the join result. 
 
+     
 * Package Manual
 ** Installation 
    * code, say
@@ -173,6 +170,8 @@ RNUM= 10000  TAU= 3 CAND0= 501   CAND1= 2  CAND2= 1  UDCDT= 0  UDNUM= 5  RST_NUM
 
 
 Last Modified: <2018-03-29 Mon> by Jianbin Qin
+
+
 
 
 
