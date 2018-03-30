@@ -31,7 +31,7 @@
 #+HTML_HEAD: .definition:before {content: "Definition: "; font-style: italic; font-weight: bold}</style>
 
 * Basic information
-  * Author: Jianbin Qin
+  * Code author: Jianbin Qin
   * Version: 0.1 (Only experimental)
   * Contact: jqin@inf.ed.ac.uk
   * More information: http://qinjianibn.com/
