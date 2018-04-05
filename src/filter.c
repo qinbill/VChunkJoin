@@ -4,7 +4,7 @@
 **/
 
 #include <math.h>
-#include <stdlib.h>
+// #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
 #include "header.h"
@@ -196,36 +196,36 @@ int content_based_mismatch_filtering(record_t *ra, record_t *rb, int tau)
   while ( as < a_chunk_len && bs < b_chunk_len) {
     if (as < a_chunk_len && bs < b_chunk_len ){
       if ( a_slots[as].chunk == b_slots[bs].chunk ){
-	if ( abs ( a_slots[as].pos - b_slots[bs].pos ) <= tau ){
-	  // loosely mis-matching.
-	  as ++;
-	  bs ++;
-	}else if ( a_slots[as].pos < b_slots[bs].pos ){
-	  if ( as > 0 && a_slots[as].chunk == a_slots[as-1].chunk &&
-	       bs > 0 && a_slots[as].chunk == b_slots[bs-1].chunk &&
-	       abs( a_slots[as].pos - b_slots[bs-1].pos ) <= tau ){
+        if ( abs ( int(a_slots[as].pos) - int(b_slots[bs].pos) ) <= tau ){
+          // loosely mis-matching.
+          as ++;
+          bs ++;
+        }else if ( a_slots[as].pos < b_slots[bs].pos ){
+          if ( as > 0 && a_slots[as].chunk == a_slots[as-1].chunk &&
+               bs > 0 && a_slots[as].chunk == b_slots[bs-1].chunk &&
+               abs( int(a_slots[as].pos) - int(b_slots[bs-1].pos) ) <= tau ){
 	    
-	  }else{
-	    a_mis_slots[a_mis++] = &a_slots[as];
-	  }
-	  as ++;
-	}else{
-	  bs ++;
-	}
+          }else{
+            a_mis_slots[a_mis++] = &a_slots[as];
+          }
+          as ++;
+        }else{
+          bs ++;
+        }
       }else{
-	t = _compare_chunks( a_slots[as].chunk, b_slots[bs].chunk);
-	if ( t < 0 ){
-	  if ( as > 0 && a_slots[as].chunk == a_slots[as-1].chunk && 
-	       bs > 0 && a_slots[as].chunk == b_slots[bs-1].chunk &&
-	       abs ( a_slots[as].pos - b_slots[bs-1].pos ) <= tau ){
+        t = _compare_chunks( a_slots[as].chunk, b_slots[bs].chunk);
+        if ( t < 0 ){
+          if ( as > 0 && a_slots[as].chunk == a_slots[as-1].chunk && 
+               bs > 0 && a_slots[as].chunk == b_slots[bs-1].chunk &&
+               abs ( int(a_slots[as].pos) - int(b_slots[bs-1].pos) ) <= tau ){
 
-	  }else{
-	    a_mis_slots[a_mis++] = &a_slots[as];
-	  }
-	  as ++;
-	}else{
-	  bs ++;
-	}
+          }else{
+            a_mis_slots[a_mis++] = &a_slots[as];
+          }
+          as ++;
+        }else{
+          bs ++;
+        }
       }
     }
     if ( a_mis > alpha )
@@ -234,8 +234,8 @@ int content_based_mismatch_filtering(record_t *ra, record_t *rb, int tau)
 
   for ( ; as < a_chunk_len; as ++ ){
     if ( as > 0 && a_slots[as].chunk == a_slots[as-1].chunk && 
-	 bs > 0 && a_slots[as].chunk == b_slots[bs-1].chunk &&
-	 abs( a_slots[as].pos - b_slots[bs-1].pos ) <= tau ){
+         bs > 0 && a_slots[as].chunk == b_slots[bs-1].chunk &&
+         abs( int(a_slots[as].pos) - int(b_slots[bs-1].pos) ) <= tau ){
     }else{
       a_mis_slots[a_mis++] = &a_slots[as];
     }
